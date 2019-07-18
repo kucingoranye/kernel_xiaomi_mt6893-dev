@@ -396,6 +396,8 @@
 #define COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW 1
 #endif
 
+#define __no_fgcse __attribute__((optimize("-fno-gcse")))
+
 /*
  * Turn individual warnings and errors on and off locally, depending
  * on version.
