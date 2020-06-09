@@ -605,6 +605,10 @@ static ssize_t proc_sys_call_handler(struct kiocb *iocb, struct iov_iter *iter,
 	if (!kbuf)
 		goto out;
 
+	/* don't even try if the size is too large */
+	if (count > KMALLOC_MAX_SIZE)
+		return -ENOMEM;
+
 	if (write) {
 		error = -EFAULT;
 		if (!copy_from_iter_full(kbuf, count, iter))
