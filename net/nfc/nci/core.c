@@ -1548,6 +1548,7 @@ static void nci_rx_work(struct work_struct *work)
 		default:
 			pr_err("unknown MT 0x%x\n", nci_mt(skb->data));
 			kfree_skb(skb);
+			kcov_remote_stop();
 			break;
 		}
 	}
