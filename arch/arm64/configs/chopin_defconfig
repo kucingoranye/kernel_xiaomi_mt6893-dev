@@ -514,3 +514,6 @@ CONFIG_CGROUP_BPF=y
 CONFIG_BPF_EVENTS=y
 CONFIG_NET_CLS_BPF=y
 CONFIG_NETFILTER_XT_MATCH_BPF=y
+# Android 17 gralloc allocates through dmabuf-heaps (/dev/dma_heap/system)
+CONFIG_DMABUF_HEAPS=y
+CONFIG_DMABUF_HEAPS_SYSTEM=y
