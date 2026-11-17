@@ -169,9 +169,11 @@ struct scan_control {
 #endif
 
 /*
- * From 0 .. 100.  Higher means more swappy.
+ * From 0 .. 200.  Higher means more swappy.
+ * 100 means anon and file pages are reclaimed with equal priority; above 100
+ * prefers swapping anon pages (useful for fast swap such as zram).
  */
-int vm_swappiness = 60;
+int vm_swappiness = 100;
 /*
  * The total number of pages which are beyond the high watermark within all
  * zones.
