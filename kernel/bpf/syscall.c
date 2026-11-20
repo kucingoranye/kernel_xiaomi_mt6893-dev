@@ -501,6 +501,10 @@ static void bpf_map_free_rcu_gp(struct rcu_head *rcu)
 	bpf_map_free_in_work(container_of(rcu, struct bpf_map, rcu));
 }
 
+/* 4.14: an RCU Tasks Trace GP is not guaranteed to imply an RCU GP here,
+ * so always chain a regular RCU grace period (conservative). */
+static inline bool rcu_trace_implies_rcu_gp(void) { return false; }
+
 static void bpf_map_free_mult_rcu_gp(struct rcu_head *rcu)
 {
 	if (rcu_trace_implies_rcu_gp())
