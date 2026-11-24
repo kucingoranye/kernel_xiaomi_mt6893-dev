@@ -25,4 +25,3 @@ ccflags-y += \
 obj-$(CONFIG_LZ4_COMPRESS) += lz4.o lz4_glue.o
 obj-$(CONFIG_LZ4_DECOMPRESS) += lz4.o lz4_glue.o
 obj-$(CONFIG_LZ4HC_COMPRESS) += lz4.o lz4hc.o lz4_glue.o
-ccflags-y += -DLZ4_FAST_DEC_LOOP=0
