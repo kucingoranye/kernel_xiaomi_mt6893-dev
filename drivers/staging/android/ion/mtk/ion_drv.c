@@ -242,6 +242,30 @@ static int __ion_is_user_va(unsigned long va, size_t size)
 	return ret;
 }
 
+static int ion_fault_in_user_pages(unsigned long start, size_t size)
+{
+	unsigned long addr = start & PAGE_MASK;
+	unsigned long end;
+	char data;
+
+	if (!size)
+		return 0;
+
+	if (start + size < start)
+		return -EFAULT;
+
+	end = PAGE_ALIGN(start + size);
+	if (end < start)
+		return -EFAULT;
+
+	for (; addr < end; addr += PAGE_SIZE) {
+		if (get_user(data, (char __user *)addr))
+			return -EFAULT;
+	}
+
+	return 0;
+}
+
 static int __cache_sync_by_range(struct ion_client *client,
 				 enum ION_CACHE_SYNC_TYPE sync_type,
 				 unsigned long start, size_t size,
@@ -271,6 +295,13 @@ static int __cache_sync_by_range(struct ion_client *client,
 		IONMSG("%s %s\n", __func__, ion_name);
 		//aee_kernel_warning(ion_name, "[ION]: Wrong Address Range");
 		return -EFAULT;
+	}
+
+	ret = ion_fault_in_user_pages(start, size);
+	if (ret) {
+		IONMSG("%s: fault-in failed va=0x%lx size=0x%zx\n",
+		       __func__, start, size);
+		return ret;
 	}
 
 start_sync:
