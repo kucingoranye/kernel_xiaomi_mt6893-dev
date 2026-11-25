@@ -198,4 +198,6 @@ pid_t pid_vnr(struct pid *pid);
 		}							\
 		task = tg___;						\
 	} while_each_pid_task(pid, type, task)
+extern struct pid *pidfd_get_pid(unsigned int fd);
+
 #endif /* _LINUX_PID_H */

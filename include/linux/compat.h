@@ -779,6 +779,11 @@ static inline struct compat_timeval ns_to_compat_timeval(s64 nsec)
 	return ctv;
 }
 
+asmlinkage long compat_sys_process_madvise(int pidfd,
+					   const struct compat_iovec __user *vec,
+					   compat_size_t vlen, int behavior,
+					   unsigned int flags);
+
 #else /* !CONFIG_COMPAT */
 
 #define is_compat_task() (0)
