@@ -953,5 +953,8 @@ asmlinkage long sys_statx(int dfd, const char __user *path, unsigned flags,
 asmlinkage long sys_pidfd_send_signal(int pidfd, int sig,
 				       siginfo_t __user *info,
 				       unsigned int flags);
+asmlinkage long sys_process_madvise(int pidfd, const struct iovec __user *vec,
+				    size_t vlen, int behavior,
+				    unsigned int flags);
 
 #endif

@@ -1623,7 +1623,7 @@ end:
  * Resolve a pidfd file descriptor to the struct pid it refers to, taking a
  * reference the caller must drop with put_pid().
  */
-static struct pid *pidfd_get_pid(unsigned int fd)
+struct pid *pidfd_get_pid(unsigned int fd)
 {
 	struct fd f;
 	struct pid *pid;
