@@ -1021,6 +1021,11 @@ static int shmem_setattr(struct dentry *dentry, struct iattr *attr)
 	if (error)
 		return error;
 
+	if ((info->seals & F_SEAL_EXEC) && (attr->ia_valid & ATTR_MODE)) {
+		if ((inode->i_mode ^ attr->ia_mode) & 0111)
+			return -EPERM;
+	}
+
 	if (S_ISREG(inode->i_mode) && (attr->ia_valid & ATTR_SIZE)) {
 		loff_t oldsize = inode->i_size;
 		loff_t newsize = attr->ia_size;
@@ -2762,7 +2767,8 @@ continue_resched:
 		     F_SEAL_SHRINK | \
 		     F_SEAL_GROW | \
 		     F_SEAL_WRITE | \
-		     F_SEAL_FUTURE_WRITE)
+		     F_SEAL_FUTURE_WRITE | \
+		     F_SEAL_EXEC)
 
 int shmem_add_seals(struct file *file, unsigned int seals)
 {
@@ -3699,7 +3705,8 @@ static int shmem_show_options(struct seq_file *seq, struct dentry *root)
 #define MFD_NAME_PREFIX_LEN (sizeof(MFD_NAME_PREFIX) - 1)
 #define MFD_NAME_MAX_LEN (NAME_MAX - MFD_NAME_PREFIX_LEN)
 
-#define MFD_ALL_FLAGS (MFD_CLOEXEC | MFD_ALLOW_SEALING | MFD_HUGETLB)
+#define MFD_ALL_FLAGS (MFD_CLOEXEC | MFD_ALLOW_SEALING | MFD_HUGETLB | \
+			 MFD_NOEXEC_SEAL | MFD_EXEC)
 
 SYSCALL_DEFINE2(memfd_create,
 		const char __user *, uname,
@@ -3711,12 +3718,16 @@ SYSCALL_DEFINE2(memfd_create,
 	char *name;
 	long len;
 
+	/* MFD_EXEC and MFD_NOEXEC_SEAL are mutually exclusive */
+	if ((flags & MFD_EXEC) && (flags & MFD_NOEXEC_SEAL))
+		return -EINVAL;
+
 	if (!(flags & MFD_HUGETLB)) {
 		if (flags & ~(unsigned int)MFD_ALL_FLAGS)
 			return -EINVAL;
 	} else {
 		/* Sealing not supported in hugetlbfs (MFD_HUGETLB) */
-		if (flags & MFD_ALLOW_SEALING)
+		if (flags & (MFD_ALLOW_SEALING | MFD_NOEXEC_SEAL))
 			return -EINVAL;
 		/* Allow huge page size encoding in flags. */
 		if (flags & ~(unsigned int)(MFD_ALL_FLAGS |
@@ -3769,13 +3780,18 @@ SYSCALL_DEFINE2(memfd_create,
 	file->f_mode |= FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE;
 	file->f_flags |= O_RDWR | O_LARGEFILE;
 
-	if (flags & MFD_ALLOW_SEALING) {
+	if (flags & (MFD_ALLOW_SEALING | MFD_NOEXEC_SEAL)) {
 		/*
 		 * flags check at beginning of function ensures
 		 * this is not a hugetlbfs (MFD_HUGETLB) file.
 		 */
 		info = SHMEM_I(file_inode(file));
 		info->seals &= ~F_SEAL_SEAL;
+		if (flags & MFD_NOEXEC_SEAL) {
+			/* no exec bits, and seal them against chmod */
+			file_inode(file)->i_mode &= ~0111;
+			info->seals |= F_SEAL_EXEC;
+		}
 	}
 
 	fd_install(fd, file);
