@@ -454,6 +454,22 @@ static long madvise_cold(struct vm_area_struct *vma,
 	return 0;
 }
 
+static inline bool can_do_pageout(struct vm_area_struct *vma)
+{
+	if (vma_is_anonymous(vma))
+		return true;
+	if (!vma->vm_file)
+		return false;
+	/*
+	 * paging out pagecache only for non-anonymous mappings that correspond
+	 * to the files the calling process could (if tried) open for writing;
+	 * otherwise we'd be including shared non-exclusive mappings, which
+	 * opens a side channel.
+	 */
+	return inode_owner_or_capable(file_inode(vma->vm_file)) ||
+	       inode_permission(file_inode(vma->vm_file), MAY_WRITE) == 0;
+}
+
 static long madvise_pageout(struct vm_area_struct *vma,
 			struct vm_area_struct **prev,
 			unsigned long start_addr, unsigned long end_addr)
@@ -464,6 +480,9 @@ static long madvise_pageout(struct vm_area_struct *vma,
 	*prev = vma;
 	if (!can_madv_dontneed_vma(vma))
 		return -EINVAL;
+
+	if (!can_do_pageout(vma))
+		return 0;
 
 	lru_add_drain();
 	tlb_gather_mmu(&tlb, mm, start_addr, end_addr);
