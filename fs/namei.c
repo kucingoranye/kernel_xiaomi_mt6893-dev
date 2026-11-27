@@ -2404,7 +2404,9 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	nd->path.dentry = NULL;
 
 	nd->m_seq = read_seqbegin(&mount_lock);
-	if (*s == '/') {
+
+	/* Absolute pathname -- fetch the root (LOOKUP_IN_ROOT uses nd->dfd). */
+	if (*s == '/' && !(flags & LOOKUP_IN_ROOT)) {
 		if (flags & LOOKUP_RCU)
 			rcu_read_lock();
 		error = nd_jump_root(nd);
@@ -2413,7 +2415,10 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 		nd->root.mnt = NULL;
 		rcu_read_unlock();
 		return ERR_PTR(error);
-	} else if (nd->dfd == AT_FDCWD) {
+	}
+
+	/* Relative pathname -- get the starting-point it is relative to. */
+	if (nd->dfd == AT_FDCWD) {
 		if (flags & LOOKUP_RCU) {
 			struct fs_struct *fs = current->fs;
 			unsigned seq;
