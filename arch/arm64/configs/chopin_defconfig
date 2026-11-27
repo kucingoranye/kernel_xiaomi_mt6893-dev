@@ -514,6 +514,7 @@ CONFIG_BPF_JIT_DEFAULT_ON=y
 CONFIG_CGROUP_BPF=y
 CONFIG_BPF_EVENTS=y
 CONFIG_NET_CLS_BPF=y
+CONFIG_NET_ACT_BPF=y
 CONFIG_NETFILTER_XT_MATCH_BPF=y
 # Android 17 gralloc runs the dma-heap framework and asks the kernel for the
 # MediaTek "mtk_mm" heaps. CONFIG_DMABUF_HEAPS_MTK_MM serves them from ION so
