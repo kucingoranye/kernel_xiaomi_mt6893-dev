@@ -419,7 +419,7 @@ int lm36273_brightness_set(int level)
 
 	lm36273_reg_write_bytes(LP36273_DISP_BB_LSB, tmp_bl & 0x7);
 	lm36273_reg_write_bytes(LP36273_DISP_BB_MSB, tmp_bl >> 3);
-	pr_info("%s: bl level = %d, tmp_bl = %hu, hbm level = %hhu\n",
+	pr_debug("%s: bl level = %d, tmp_bl = %hu, hbm level = %hhu\n",
 			__func__, level, tmp_bl, is_max_bl ? g_lm36273_led.hbm_state : 0);
 
 	if (level == 0 && g_lm36273_led.level != 0) {

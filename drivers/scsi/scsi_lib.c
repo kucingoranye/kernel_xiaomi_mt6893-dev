@@ -324,7 +324,7 @@ int scsi_execute(struct scsi_device *sdev, const unsigned char *cmd,
  out:
 	blk_put_request(req);
 
-	pr_err("ghr: scsi_execute exit ret = 0x%x\n",ret);
+	pr_debug("ghr: scsi_execute exit ret = 0x%x\n",ret);
 	return ret;
 }
 EXPORT_SYMBOL(scsi_execute);
